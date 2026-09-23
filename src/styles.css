@@ -103,3 +103,8 @@
     border: 1px solid var(--line);
     border-radius: 5px;
 }
+.custom-add-button svg {
+    position: static;
+    pointer-events: none;
+    color: inherit;
+}

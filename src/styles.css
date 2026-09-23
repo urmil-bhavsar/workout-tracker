@@ -15,7 +15,49 @@
 .date-nav { display: flex; align-items: center; justify-content: space-between; margin: 2px 0 36px; } .date-nav button { border: 1px solid var(--line); background: transparent; border-radius: 8px; min-width: 42px; height: 38px; display: grid; place-items: center; } .date-nav .today-button { border: 0; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .1em; color: var(--lime); min-width: auto; } .workout-heading { margin-bottom: 27px; } .workout-heading h1 { text-transform: capitalize; }
 .exercise-card, .chart-card, .settings-group { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 13px; } .exercise-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; } .exercise-title > div { display: flex; align-items: baseline; gap: 11px; } .exercise-title h2 { font-size: 18px; margin: 0; } .exercise-index { font: 11px 'DM Mono', monospace; color: var(--lime); } .set-count { font: 10px 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; }
 .set-table { width: 100%; } .set-head, .set-row { display: grid; grid-template-columns: 32px 1fr 1fr 34px; gap: 9px; align-items: center; } .set-head { margin: 0 0 6px; font-size: 9px; } .set-head span:nth-child(2), .set-head span:nth-child(3) { text-align: center; } .set-row { margin-bottom: 7px; } .set-row input { width: 100%; background: var(--panel-2); border: 1px solid transparent; border-radius: 6px; color: var(--ink); min-height: 40px; text-align: center; outline: none; } .set-row input:focus { border-color: var(--lime); } .set-number { font: 12px 'DM Mono', monospace; color: var(--muted); text-align: center; } .icon-button { border: 0; background: transparent; color: var(--muted); display: grid; place-items: center; padding: 7px; } .add-set, .text-button { border: 0; background: transparent; color: var(--lime); display: inline-flex; align-items: center; gap: 7px; padding: 10px 0 0; font-size: 12px; font-weight: 700; } .note-input, .workout-note { width: 100%; margin-top: 15px; background: transparent; border: 0; border-top: 1px solid var(--line); padding: 13px 0 0; color: var(--ink); outline: none; font-size: 12px; resize: vertical; } .workout-note { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-height: 76px; padding: 14px; margin: 3px 0 13px; }
-.save-button { width: 100%; min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--lime); color: #111311; border: 0; border-radius: 8px; font-weight: 800; font-size: 13px; } .rest-state, .empty-state { border-top: 1px solid var(--line); padding: 50px 3px; } .rest-state span { color: var(--lime); font: 12px 'DM Mono', monospace; } .rest-state h2, .empty-state h2 { font-size: 25px; margin: 24px 0 8px; } .rest-state p, .empty-state p { color: var(--muted); font-size: 13px; max-width: 300px; line-height: 1.6; }
+.save-button {
+    position: sticky;
+    bottom: 84px;
+    z-index: 4;
+    width: 100%;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--lime);
+    color: #111311;
+    border: 0;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 13px;
+    box-shadow: 0 -10px 22px color-mix(in srgb, var(--bg) 75%, transparent);
+}
+
+.rest-state,
+.empty-state {
+    border-top: 1px solid var(--line);
+    padding: 50px 3px;
+}
+
+.rest-state span {
+    color: var(--lime);
+    font: 12px 'DM Mono', monospace;
+}
+
+.rest-state h2,
+.empty-state h2 {
+    font-size: 25px;
+    margin: 24px 0 8px;
+}
+
+.rest-state p,
+.empty-state p {
+    color: var(--muted);
+    font-size: 13px;
+    max-width: 300px;
+    line-height: 1.6;
+}
 .bottom-nav { position: fixed; z-index: 5; bottom: 0; left: 50%; transform: translateX(-50%); width: min(760px, 100%); height: 72px; display: grid; grid-template-columns: repeat(5, 1fr); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(16px); border-top: 1px solid var(--line); } .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: var(--muted); text-decoration: none; font-size: 10px; } .nav-item.active { color: var(--lime); } .nav-item svg { transition: transform .2s ease; } .nav-item.active svg { transform: translateY(-2px); }
 .history-list { border-top: 1px solid var(--line); } .history-row { color: var(--ink); display: flex; justify-content: space-between; align-items: center; text-decoration: none; padding: 17px 0; border-bottom: 1px solid var(--line); } .history-row strong, .history-row span { display: block; } .history-row strong { font-size: 17px; } .history-row span, .history-meta { color: var(--muted); font-size: 11px; margin-top: 5px; } .history-meta { display: flex; align-items: center; gap: 10px; text-align: right; } .history-meta b { color: var(--ink); font-size: 11px; } .history-footnote, .settings-note { color: var(--muted); font: 10px 'DM Mono', monospace; margin-top: 28px; }
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin: 20px 0; } .stats-grid > div { background: var(--panel); border: 1px solid var(--line); padding: 13px 10px; border-radius: 8px; } .stats-grid span { display: block; color: var(--muted); font-size: 10px; margin-bottom: 13px; } .stats-grid strong { font-size: 18px; } .stats-grid small { font-size: 10px; color: var(--muted); font-weight: 400; } .select-label { display: block; font-size: 11px; color: var(--muted); } select { display: block; width: 100%; margin-top: 8px; background: var(--panel); border: 1px solid var(--line); color: var(--ink); border-radius: 7px; padding: 12px; } .chart-card { padding: 16px 12px; } .chart { height: 190px; margin-top: 15px; }
@@ -107,4 +149,52 @@
     position: static;
     pointer-events: none;
     color: inherit;
+}
+.progress-volume {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0 2px 16px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.progress-volume strong {
+    color: var(--ink);
+    font-size: 18px;
+}
+
+.progress-volume small {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 400;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 10px;
+    margin: 0 4px 8px;
+}
+
+.chart-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.chart-legend i {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.legend-weight {
+    background: var(--lime);
+}
+
+.legend-reps {
+    background: #75c8ff;
 }

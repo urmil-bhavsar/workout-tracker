@@ -14,4 +14,25 @@
 .split-day { border: 1px solid var(--line); border-radius: 9px; margin-bottom: 10px; overflow: hidden; background: var(--panel); } .split-day-head { display: flex; justify-content: space-between; align-items: center; padding: 15px; } .split-day-head input { display: block; color: var(--ink); background: transparent; border: 0; outline: none; padding: 8px 0 0; font-size: 16px; font-weight: 700; width: 160px; } .rest-toggle { background: transparent; border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; color: var(--muted); font-size: 10px; } .split-exercises { border-top: 1px solid var(--line); padding: 4px 15px; } .split-exercise { display: grid; grid-template-columns: 20px 1fr auto 25px 25px; align-items: center; gap: 5px; min-height: 43px; border-bottom: 1px solid var(--line); } .split-exercise > span { color: var(--lime); font: 10px 'DM Mono', monospace; } .split-exercise strong { font-size: 12px; } .split-exercise label { color: var(--muted); font-size: 10px; } .split-exercise label input { width: 28px; color: var(--ink); background: transparent; border: 0; text-align: right; } .split-exercise button { background: transparent; border: 0; color: var(--muted); padding: 3px; } .add-exercise { position: relative; display: flex; align-items: center; } .add-exercise select { border: 0; margin: 0; color: var(--lime); background: transparent; padding: 13px 15px; appearance: none; } .add-exercise svg { position: absolute; right: 15px; pointer-events: none; color: var(--lime); } .is-rest { opacity: .72; }
 .settings-group { padding: 0 16px; } .setting-row { min-height: 67px; border: 0; background: transparent; width: 100%; color: var(--ink); display: flex; align-items: center; justify-content: space-between; text-align: left; } .setting-row > span:first-child { display: flex; align-items: center; gap: 13px; } .setting-row > span:first-child > span { display: flex; flex-direction: column; font-size: 13px; gap: 3px; } .setting-row small { color: var(--muted); font-size: 10px; } .setting-row input { display: none; } .settings-divider { border-top: 1px solid var(--line); } .switch { width: 31px; height: 18px; background: var(--lime); border-radius: 20px; position: relative; } .switch:after { content: ''; position: absolute; width: 14px; height: 14px; right: 2px; top: 2px; background: #111311; border-radius: 50%; } .toast { position: fixed; z-index: 8; bottom: 87px; left: 50%; transform: translateX(-50%); background: var(--lime); color: #111311; padding: 11px 15px; border-radius: 5px; font-size: 12px; font-weight: 700; box-shadow: 0 8px 30px #0004; display: flex; align-items: center; gap: 7px; } .loading { color: var(--muted); padding: 50px 0; font-size: 13px; }
 @media (min-width: 700px) { .page { padding: 42px 50px; } .topbar { padding: 0 50px; } .bottom-nav { left: auto; right: 0; transform: none; width: 100%; } }
+.split-exercise .remove-exercise {
+    color: var(--red);
+}
 .app-shell { max-width: 720px; margin: 0 auto; padding: 32px 20px; }
+.split-exercise {
+    grid-template-columns: 22px minmax(0, 1fr) auto 28px 28px 32px;
+}
+
+.split-exercise strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.split-exercise .remove-exercise {
+    justify-self: end;
+    width: 30px;
+    height: 30px;
+    border-left: 1px solid var(--line);
+    padding-left: 8px;
+}

@@ -198,3 +198,4 @@
 .legend-reps {
     background: #75c8ff;
 }
+.day-picker { margin: -8px 0 26px; } .day-picker .eyebrow { margin-bottom: 10px; } .day-chips { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; } .day-chips::-webkit-scrollbar { display: none; } .day-chip { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 700; } .day-chip small { font: 9px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 400; } .day-chip.active { border-color: var(--lime); color: var(--lime); }

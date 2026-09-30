@@ -1,27 +1,29 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Trash2, TrendingUp } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileText, Trash2, Trophy, TrendingUp } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Layout } from '../components/Layout'
 import { dateKey, db, shiftDate } from '../db/db'
 import { useWorkoutData } from '../hooks/useWorkoutData'
-import { exerciseBest, exerciseVolume, muscleVolume, weekStart } from '../utils/analytics'
+import { bodyWeightOn, exerciseBest, exerciseVolume, formatDay, muscleVolume, personalRecords, relativeStrength, shiftPeriod, summarizePeriod, weekStart } from '../utils/analytics'
 
-const tabs = [['lifts', 'Lifts'], ['muscles', 'Muscles'], ['body', 'Body weight']]
-const metrics = [['weight', 'Best weight', 'kg'], ['e1rm', 'Est. 1RM', 'kg'], ['reps', 'Best reps', ''], ['volume', 'Volume', 'kg']]
+const tabs = [['summary', 'Summary'], ['lifts', 'Lifts'], ['records', 'Records'], ['muscles', 'Muscles'], ['body', 'Body']]
+const metrics = [['weight', 'Best weight', 'kg'], ['e1rm', 'Est. 1RM', 'kg'], ['relative', '× Body weight', '× BW'], ['reps', 'Best reps', ''], ['volume', 'Volume', 'kg']]
+const signed = (value, unit = '') => value === null || value === undefined ? '–' : `${value > 0 ? '+' : ''}${value}${unit}`
 const tooltipStyle = { background: 'var(--panel-2)', border: '1px solid var(--line)', borderRadius: 6, color: 'var(--ink)', fontSize: 12 }
 const axisTick = { fill: 'var(--muted)', fontSize: 10 }
 
 function TrendChart({ data, dataKey, name, unit }) {
-	return <div className="chart"><ResponsiveContainer width="100%" height="100%"><LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
+	return <div className="chart"><ResponsiveContainer width="100%" height="100%"><LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -6 }}>
 		<XAxis dataKey="label" tick={axisTick} tickLine={false} axisLine={{ stroke: 'var(--line)' }} minTickGap={24}/>
-		<YAxis tick={axisTick} tickLine={false} axisLine={false} domain={['auto', 'auto']} width={48}/>
+		<YAxis tick={axisTick} tickLine={false} axisLine={false} domain={['auto', 'auto']} width={44} tickFormatter={(value) => Number(value.toFixed(2)).toLocaleString()}/>
 		<Tooltip contentStyle={tooltipStyle} labelStyle={{ color: 'var(--muted)' }} cursor={{ stroke: 'var(--line)' }} formatter={(value) => [`${value.toLocaleString()}${unit ? ` ${unit}` : ''}`, name]}/>
 		<Line type="monotone" dataKey={dataKey} name={name} stroke="var(--lime)" strokeWidth={2} dot={{ fill: 'var(--lime)', stroke: 'var(--panel)', strokeWidth: 2, r: 4 }} activeDot={{ r: 5 }}/>
 	</LineChart></ResponsiveContainer></div>
 }
 
-function Lifts({ workouts }) {
-	const rows = useMemo(() => workouts.flatMap((workout) => workout.exercises.map((exercise) => ({ date: workout.date, label: workout.date.slice(5), name: exercise.name, ...exerciseBest(exercise), volume: exerciseVolume(exercise) }))).filter((row) => row.reps > 0), [workouts])
+function Lifts({ workouts, weights }) {
+	const rows = useMemo(() => workouts.flatMap((workout) => workout.exercises.map((exercise) => ({ date: workout.date, label: workout.date.slice(5), name: exercise.name, ...exerciseBest(exercise), volume: exerciseVolume(exercise) }))).filter((row) => row.reps > 0).map((row) => ({ ...row, relative: relativeStrength(row.e1rm, bodyWeightOn(weights, row.date)) })), [workouts, weights])
 	const names = [...new Set(rows.map((row) => row.name))].sort()
 	const [selected, setSelected] = useState('')
 	const [metric, setMetric] = useState('weight')
@@ -30,13 +32,16 @@ function Lifts({ workouts }) {
 	const data = rows.filter((row) => row.name === selected).sort((a, b) => a.date.localeCompare(b.date))
 	const best = (key) => Math.max(0, ...data.map((row) => row[key]))
 	const total = data.reduce((sum, row) => sum + row.volume, 0)
-	const [, metricName, unit] = metrics.find(([key]) => key === metric)
+	const available = metrics.filter(([key]) => key !== 'relative' || weights.length)
+	const [, metricName, unit] = available.find(([key]) => key === metric) || available[0]
+	const latest = data[data.length - 1]
 	return <>
 		<label className="select-label">Exercise<select value={selected} onChange={(event) => setSelected(event.target.value)}>{names.map((name) => <option key={name} value={name}>{name}</option>)}</select></label>
 		<div className="stats-grid stats-grid-4"><div><span>Best weight</span><strong>{best('weight')} <small>kg</small></strong></div><div><span>Est. 1RM</span><strong>{best('e1rm')} <small>kg</small></strong></div><div><span>Best reps</span><strong>{best('reps')}</strong></div><div><span>Sessions</span><strong>{data.length}</strong></div></div>
 		<div className="progress-volume"><span>Total volume</span><strong>{total.toLocaleString()} <small>kg</small></strong></div>
-		<section className="chart-card"><div className="chip-row">{metrics.map(([key, label]) => <button key={key} className={`chip${metric === key ? ' active' : ''}`} onClick={() => setMetric(key)}>{label}</button>)}</div><TrendChart data={data} dataKey={metric} name={metricName} unit={unit}/></section>
-		<p className="chart-footnote">Est. 1RM uses the Epley formula: weight × (1 + reps ÷ 30), from your best set each session.</p>
+		<div className="progress-volume"><span>Est. 1RM ÷ body weight</span>{!latest ? null : weights.length ? <strong>{latest.relative}× <small>latest session</small></strong> : <small>Log body weight to see this</small>}</div>
+		<section className="chart-card"><div className="chip-row">{available.map(([key, label]) => <button key={key} className={`chip${metric === key ? ' active' : ''}`} onClick={() => setMetric(key)}>{label}</button>)}</div><TrendChart data={data} dataKey={available.some(([key]) => key === metric) ? metric : 'weight'} name={metricName} unit={unit}/></section>
+		<p className="chart-footnote">Est. 1RM uses the Epley formula: weight × (1 + reps ÷ 30), from your best set each session. × Body weight divides it by your latest weigh-in on or before that day.</p>
 	</>
 }
 
@@ -56,6 +61,50 @@ function Muscles({ workouts, exercises }) {
 			{groups.map((group) => <div className="muscle-row" key={group.muscle} title={`${group.sets} sets · ${Math.round(group.volume).toLocaleString()} kg`}><span className="muscle-name">{group.muscle}</span><div className="muscle-bar"><i style={{ width: `${(group.sets / maxSets) * 100}%` }}/></div><span className="muscle-value"><b>{Math.round((group.sets / weeks) * 10) / 10}</b> <small>{Math.round(group.volume / weeks).toLocaleString()} kg</small></span></div>)}
 		</section>}
 		<p className="chart-footnote">Muscle groups come from the exercise library. Custom exercises show as “Custom”. Many lifters aim for about 10–20 hard sets per muscle each week.</p>
+	</>
+}
+
+function Summary({ data }) {
+	const [kind, setKind] = useState('week')
+	const [anchor, setAnchor] = useState(dateKey())
+	const summary = summarizePeriod(data, kind, anchor)
+	const isCurrent = summary.range.to >= dateKey()
+	const noun = kind === 'week' ? 'week' : 'month'
+	const change = (label, value, previous) => <small className="delta">{value === null ? `no ${previous} data` : `${signed(value, '%')} vs ${previous}`}</small>
+	return <>
+		<div className="period-nav"><div className="chip-row">{[['week', 'Week'], ['month', 'Month']].map(([key, label]) => <button key={key} className={`chip${kind === key ? ' active' : ''}`} onClick={() => setKind(key)}>{label}</button>)}</div><div className="period-step"><button onClick={() => setAnchor(shiftPeriod(kind, anchor, -1))} aria-label={`Previous ${noun}`}><ChevronLeft size={18}/></button><strong>{summary.range.label}</strong><button disabled={isCurrent} onClick={() => setAnchor(shiftPeriod(kind, anchor, 1))} aria-label={`Next ${noun}`}><ChevronRight size={18}/></button></div></div>
+		<div className="stats-grid stats-grid-4">
+			<div><span>Workouts</span><strong>{summary.sessions.length}<small> / {summary.planned} planned</small></strong></div>
+			<div><span>Volume</span><strong>{Math.round(summary.volume).toLocaleString()} <small>kg</small></strong>{change('Volume', summary.volumeChange, summary.partial ? `same point last ${noun}` : `last ${noun}`)}</div>
+			<div><span>Sets done</span><strong>{summary.sets}</strong></div>
+			<div><span>PRs</span><strong>{summary.prs.length}</strong></div>
+		</div>
+		<section className="chart-card summary-card">
+			<p className="card-label">Most improved</p>
+			{summary.mostImproved ? <p className="summary-line"><b>{summary.mostImproved.name}</b> est. 1RM {summary.mostImproved.from} → {summary.mostImproved.to} kg <em>{signed(summary.mostImproved.gain, '%')}</em></p> : <p className="summary-line muted">No lift beat its earlier best this {noun} yet.</p>}
+			<p className="card-label">Personal records</p>
+			{summary.prs.length ? <ul className="pr-list">{summary.prs.map((pr, index) => <li key={index}><Trophy size={12}/><span><b>{pr.exercise}</b> {pr.label}</span><small>{formatDay(pr.date)}</small></li>)}</ul> : <p className="summary-line muted">No PRs this {noun}.</p>}
+			{summary.bodyWeight && <><p className="card-label">Body weight</p><p className="summary-line">{summary.bodyWeight.start} → {summary.bodyWeight.end} kg <em>{signed(summary.bodyWeight.change, ' kg')}</em></p></>}
+		</section>
+		<Link className="report-link" to={`/report?kind=${kind}&date=${anchor}`}><FileText size={17}/> Open printable report<ChevronRight size={16}/></Link>
+	</>
+}
+
+const recordSorts = [['recent', 'Recent'], ['strongest', 'Strongest'], ['name', 'A–Z']]
+function Records({ workouts, weights }) {
+	const [sort, setSort] = useState('recent')
+	const records = personalRecords(workouts, weights).sort((a, b) => sort === 'name' ? a.name.localeCompare(b.name) : sort === 'strongest' ? (b.e1rm?.value || 0) - (a.e1rm?.value || 0) : b.latestRecord.localeCompare(a.latestRecord))
+	if (!records.length) return <div className="empty-state"><h2>No records yet.</h2><p>Your best lifts will be collected here as you log workouts.</p></div>
+	return <>
+		<div className="chip-row">{recordSorts.map(([key, label]) => <button key={key} className={`chip${sort === key ? ' active' : ''}`} onClick={() => setSort(key)}>{label}</button>)}</div>
+		<div className="record-list">{records.map((record) => <section className="record-card" key={record.key}>
+			<div className="record-head"><h2>{record.name}</h2>{record.e1rm && <strong>{record.e1rm.value}<small> kg 1RM</small></strong>}</div>
+			<dl>
+				<div><dt>Heaviest</dt><dd>{record.weight.value} kg × {record.weight.reps}</dd><small>{formatDay(record.weight.date)}</small></div>
+				<div><dt>Most reps</dt><dd>{record.reps.value} @ {record.reps.weight} kg</dd><small>{formatDay(record.reps.date)}</small></div>
+				<div><dt>{weights.length ? '× Body weight' : 'Sessions'}</dt><dd>{weights.length ? `${record.relative}×` : record.sessions}</dd><small>{weights.length ? `${record.sessions} sessions` : `last ${formatDay(record.lastDate)}`}</small></div>
+			</dl>
+		</section>)}</div>
 	</>
 }
 
@@ -79,11 +128,13 @@ function BodyWeight({ weights, refresh }) {
 }
 
 export function Progress() {
-	const { workouts, exercises, weights, loading, refresh } = useWorkoutData()
-	const [tab, setTab] = useState('lifts')
+	const { split, workouts, exercises, weights, loading, refresh } = useWorkoutData()
+	const [params, setParams] = useSearchParams()
+	const tab = tabs.some(([key]) => key === params.get('tab')) ? params.get('tab') : 'summary'
+	const setTab = (key) => setParams({ tab: key }, { replace: true })
 	return <Layout><main className="page">
 		<div className="page-heading"><div><p className="eyebrow">Measured over time</p><h1>Progress</h1></div><span className="heading-icon"><TrendingUp size={21}/></span></div>
 		<div className="tab-row" role="tablist">{tabs.map(([key, label]) => <button key={key} role="tab" aria-selected={tab === key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{label}</button>)}</div>
-		{loading ? <div className="loading">Calculating progress...</div> : tab === 'lifts' ? <Lifts workouts={workouts}/> : tab === 'muscles' ? <Muscles workouts={workouts} exercises={exercises}/> : <BodyWeight weights={weights} refresh={refresh}/>}
+		{loading ? <div className="loading">Calculating progress...</div> : tab === 'summary' ? <Summary data={{ workouts, split, exercises, weights }}/> : tab === 'lifts' ? <Lifts workouts={workouts} weights={weights}/> : tab === 'records' ? <Records workouts={workouts} weights={weights}/> : tab === 'muscles' ? <Muscles workouts={workouts} exercises={exercises}/> : <BodyWeight weights={weights} refresh={refresh}/>}
 	</main></Layout>
 }

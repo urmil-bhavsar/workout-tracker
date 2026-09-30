@@ -4,7 +4,8 @@ import { History } from './pages/History'
 import { Progress } from './pages/Progress'
 import { Split } from './pages/Split'
 import { Settings } from './pages/Settings'
+import { Report } from './pages/Report'
 
 export default function App() {
-  return <Routes><Route path="/" element={<Home />} /><Route path="/history" element={<History />} /><Route path="/progress" element={<Progress />} /><Route path="/split" element={<Split />} /><Route path="/settings" element={<Settings />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>
+  return <Routes><Route path="/" element={<Home />} /><Route path="/history" element={<History />} /><Route path="/progress" element={<Progress />} /><Route path="/split" element={<Split />} /><Route path="/settings" element={<Settings />} /><Route path="/report" element={<Report />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>
 }

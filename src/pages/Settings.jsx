@@ -3,20 +3,74 @@ import { Cloud, Download, FileSpreadsheet, LogOut, Moon, RefreshCw, Upload } fro
 import { Layout } from '../components/Layout'
 import { exportData, importData } from '../db/db'
 import { exportToExcel } from '../utils/excelExport'
+import { applyTheme, themePalettes } from '../utils/theme'
 import { useAuth } from '../firebase/AuthContext'
 
 export function Settings() {
-    const { user, syncing, syncError, lastSynced, firebaseConfigured, signIn, signOut, syncNow } = useAuth()
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark')
+  const { user, syncing, syncError, lastSynced, firebaseConfigured, signIn, signOut, syncNow } = useAuth()
+  const [theme, setTheme] = useState(document.documentElement.dataset.theme || 'dark')
+  const [palette, setPalette] = useState(document.documentElement.dataset.palette || 'default')
   const [message, setMessage] = useState('')
-  const notify = (text) => { setMessage(text); setTimeout(() => setMessage(''), 2200) }
-  const toggleTheme = () => { const next = theme === 'dark' ? 'light' : 'dark'; setTheme(next); localStorage.setItem('theme', next); document.documentElement.dataset.theme = next }
-  const downloadJson = async () => { const blob = new Blob([JSON.stringify(await exportData(), null, 2)], { type: 'application/json' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `repbook-backup-${new Date().toISOString().slice(0, 10)}.json`; link.click(); URL.revokeObjectURL(link.href); notify('JSON backup exported') }
-  const downloadExcel = async () => { exportToExcel(await exportData()); notify('Excel file exported') }
-    const upload = (event) => { const file = event.target.files[0]; if (!file || !confirm('Importing replaces the local data on this device. Continue?')) return; const reader = new FileReader(); reader.onload = async () => { try { await importData(JSON.parse(reader.result)); if (user) await syncNow(); notify('Backup restored') } catch { notify('That backup could not be read or synced') } }; reader.readAsText(file); event.target.value = '' }
-    const connect = async () => { try { await signIn() } catch (error) { console.error('Google sign-in failed:', error); notify('Could not sign in. Check Firebase Authentication settings.') } }
-    const sync = async () => { try { const result = await syncNow(); notify(`Synced ${result.records} records`) } catch { notify('Sync failed. Local data is safe on this device.') } }
-    const disconnect = async () => { try { await signOut(); notify('Signed out. Your local data remains here.') } catch { notify('Could not sign out') } }
 
-    return <Layout><main className="page"><div className="page-heading"><div><p className="eyebrow">Local-first · private cloud</p><h1>Settings</h1></div></div><section className="settings-group"><button className="setting-row" onClick={ toggleTheme }><span><Moon size={ 19 } /><span>Appearance<small>{ theme === 'dark' ? 'Dark mode' : 'Light mode' }</small></span></span><span className="switch on" /></button><div className="settings-divider" /><div className="cloud-settings"><div className="cloud-settings-heading"><Cloud size={ 19 } /><span>Cloud sync<small>{ user ? `Signed in as ${user.email || user.displayName}` : 'Sync your logbook across devices' }</small></span></div>{ !firebaseConfigured ? <p className="cloud-help">Firebase is not configured yet. Follow the Firebase setup guide, then add your project values to <code>.env.local</code>.</p> : user ? <><div className="sync-status">{ syncing ? 'Syncing your logbook…' : syncError || (lastSynced ? `Last synced ${lastSynced.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : 'Cloud sync is ready') }</div><div className="cloud-actions"><button className="cloud-button primary" onClick={ sync } disabled={ syncing }><RefreshCw size={ 15 } /> Sync now</button><button className="cloud-button" onClick={ disconnect }><LogOut size={ 15 } /> Sign out</button></div></> : <><p className="cloud-help">Your workout data stays on this device until you sign in. Sync keeps a private copy under your Google account.</p><button className="cloud-button primary" onClick={ connect }><Cloud size={ 16 } /> Continue with Google</button></> }</div><div className="settings-divider" /><button className="setting-row" onClick={ downloadJson }><span><Download size={ 19 } /><span>Export JSON<small>Full backup for restoring later</small></span></span><span>→</span></button><button className="setting-row" onClick={ downloadExcel }><span><FileSpreadsheet size={ 19 } /><span>Export as Excel<small>Open your workout data in spreadsheets</small></span></span><span>→</span></button><label className="setting-row"><span><Upload size={ 19 } /><span>Import JSON<small>Restore from a backup</small></span></span><input type="file" accept="application/json" onChange={ upload } /><span>→</span></label></section><p className="settings-note">Your logbook is stored in IndexedDB for offline use. When connected, sync is encrypted in transit and restricted to your signed-in Firebase account.</p>{ message && <div className="toast">{ message }</div> }</main></Layout>
+  const notify = (text) => { setMessage(text); setTimeout(() => setMessage(''), 2200) }
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    applyTheme(next, palette)
+  }
+  const selectPalette = (next) => {
+    setPalette(next)
+    applyTheme(theme, next)
+  }
+  const downloadJson = async () => {
+    const blob = new Blob([JSON.stringify(await exportData(), null, 2)], { type: 'application/json' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `repbook-backup-${new Date().toISOString().slice(0, 10)}.json`
+    link.click()
+    URL.revokeObjectURL(link.href)
+    notify('JSON backup exported')
+  }
+  const downloadExcel = async () => { exportToExcel(await exportData()); notify('Excel file exported') }
+  const upload = (event) => {
+    const file = event.target.files[0]
+    if (!file || !confirm('Importing replaces the local data on this device. Continue?')) return
+    const reader = new FileReader()
+    reader.onload = async () => {
+      try {
+        await importData(JSON.parse(reader.result))
+        if (user) await syncNow()
+        notify('Backup restored')
+      } catch {
+        notify('That backup could not be read or synced')
+      }
+    }
+    reader.readAsText(file)
+    event.target.value = ''
+  }
+  const connect = async () => {
+    try { await signIn() } catch (error) { console.error('Google sign-in failed:', error); notify('Could not sign in. Check Firebase Authentication settings.') }
+  }
+  const sync = async () => {
+    try { const result = await syncNow(); notify(`Synced ${result.records} records`) } catch { notify('Sync failed. Local data is safe on this device.') }
+  }
+  const disconnect = async () => {
+    try { await signOut(); notify('Signed out. Your local data remains here.') } catch { notify('Could not sign out') }
+  }
+
+  return <Layout><main className="page">
+    <div className="page-heading"><div><p className="eyebrow">Local-first · private cloud</p><h1>Settings</h1></div></div>
+    <section className="settings-group">
+      <button className="setting-row" onClick={toggleTheme}><span><Moon size={19}/><span>Appearance<small>{theme === 'dark' ? 'Dark mode' : 'Light mode'}</small></span></span><span className="switch on"/></button>
+      <div className="palette-picker"><span className="palette-picker-title">Color theme</span><div className="palette-grid" role="group" aria-label="Color theme">{themePalettes.map((option) => <button className={`palette-choice ${palette === option.id ? 'selected' : ''}`} type="button" key={option.id} aria-pressed={palette === option.id} onClick={() => selectPalette(option.id)}><span className="palette-swatches" aria-hidden="true">{option.swatches.map((color) => <i key={color} style={{ backgroundColor: color }}/>)}</span><span>{option.label}</span></button>)}</div></div>
+      <div className="settings-divider"/>
+      <div className="cloud-settings"><div className="cloud-settings-heading"><Cloud size={19}/><span>Cloud sync<small>{user ? `Signed in as ${user.email || user.displayName}` : 'Sync your logbook across devices'}</small></span></div>{!firebaseConfigured ? <p className="cloud-help">Firebase is not configured yet. Follow the Firebase setup guide, then add your project values to <code>.env.local</code>.</p> : user ? <><div className="sync-status">{syncing ? 'Syncing your logbook…' : syncError || (lastSynced ? `Last synced ${lastSynced.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : 'Cloud sync is ready')}</div><div className="cloud-actions"><button className="cloud-button primary" onClick={sync} disabled={syncing}><RefreshCw size={15}/> Sync now</button><button className="cloud-button" onClick={disconnect}><LogOut size={15}/> Sign out</button></div></> : <><p className="cloud-help">Your workout data stays on this device until you sign in. Sync keeps a private copy under your Google account.</p><button className="cloud-button primary" onClick={connect}><Cloud size={16}/> Continue with Google</button></>}</div>
+      <div className="settings-divider"/>
+      <button className="setting-row" onClick={downloadJson}><span><Download size={19}/><span>Export JSON<small>Full backup for restoring later</small></span></span><span>→</span></button>
+      <button className="setting-row" onClick={downloadExcel}><span><FileSpreadsheet size={19}/><span>Export as Excel<small>Open your workout data in spreadsheets</small></span></span><span>→</span></button>
+      <label className="setting-row"><span><Upload size={19}/><span>Import JSON<small>Restore from a backup</small></span></span><input type="file" accept="application/json" onChange={upload}/><span>→</span></label>
+    </section>
+    <p className="settings-note">Your logbook is stored in IndexedDB for offline use. When connected, sync is restricted to your signed-in Firebase account.</p>
+    {message && <div className="toast">{message}</div>}
+  </main></Layout>
 }

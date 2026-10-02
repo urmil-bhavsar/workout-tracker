@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth'
+import { getRedirectResult, onAuthStateChanged, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth'
 import { auth, firebaseConfigured, googleProvider } from './client'
 
 const AuthContext = createContext(null)
@@ -9,12 +9,20 @@ export function AuthProvider({ children }) {
   const [ready, setReady] = useState(!firebaseConfigured)
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState('')
+  const [authError, setAuthError] = useState('')
   const [lastSynced, setLastSynced] = useState(null)
 
   useEffect(() => {
     if (!auth) return undefined
+    getRedirectResult(auth).then((result) => {
+      if (result) setAuthError('')
+    }).catch((error) => {
+      console.error('Google redirect sign-in failed:', error)
+      setAuthError(error.code || 'auth/redirect-failed')
+    })
     return onAuthStateChanged(auth, async (nextUser) => {
       setUser(nextUser)
+      if (nextUser) setAuthError('')
       if (!nextUser) { setSyncing(false); setReady(true); return }
       setSyncing(true)
       setSyncError('')
@@ -34,9 +42,16 @@ export function AuthProvider({ children }) {
 
   const signIn = async () => {
     if (!auth) throw new Error('Add Firebase settings to .env.local first.')
+    setAuthError('')
     const mobile = window.matchMedia('(max-width: 700px)').matches || /iPhone|iPad|Android/i.test(navigator.userAgent)
-    if (mobile) await signInWithRedirect(auth, googleProvider)
-    else await signInWithPopup(auth, googleProvider)
+    try {
+      if (mobile) await signInWithRedirect(auth, googleProvider)
+      else await signInWithPopup(auth, googleProvider)
+    } catch (error) {
+      console.error('Google sign-in failed:', error)
+      setAuthError(error.code || 'auth/sign-in-failed')
+      throw error
+    }
   }
   const signOutUser = async () => { if (auth) await signOut(auth) }
   const syncNow = async () => {
@@ -55,7 +70,7 @@ export function AuthProvider({ children }) {
     } finally { setSyncing(false) }
   }
 
-  return <AuthContext.Provider value={{ user, ready, syncing, syncError, lastSynced, firebaseConfigured, signIn, signOut: signOutUser, syncNow }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, ready, syncing, syncError, authError, lastSynced, firebaseConfigured, signIn, signOut: signOutUser, syncNow }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

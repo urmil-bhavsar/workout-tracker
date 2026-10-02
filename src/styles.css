@@ -345,6 +345,8 @@
 .cloud-help code {
     color: var(--ink);
 }
+.auth-error { margin: 12px 0; padding: 10px 11px; border: 1px solid color-mix(in srgb, var(--red) 45%, var(--line)); border-radius: 6px; background: color-mix(in srgb, var(--red) 10%, var(--panel)); color: var(--ink); font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.auth-error code { color: var(--red); font-size: 10px; }
 
 .cloud-actions {
     display: flex;

@@ -1,4 +1,5 @@
 import Dexie from 'dexie'
+import { auth } from '../firebase/client'
 
 export const db = new Dexie('repbook')
 db.version(1).stores({
@@ -45,7 +46,10 @@ export async function getPreviousPerformance(exerciseId, beforeDate) {
   const workouts = await db.workouts.where('date').below(beforeDate).reverse().sortBy('date')
   return workouts.find((workout) => workout.exercises.some((exercise) => exercise.exerciseId === exerciseId))?.exercises.find((exercise) => exercise.exerciseId === exerciseId) || null
 }
-export async function saveWorkout(workout) { await db.workouts.put({ ...workout, updatedAt: Date.now() }) }
+export async function saveWorkout(workout) {
+  await db.workouts.put({ ...workout, updatedAt: Date.now() })
+  if (auth?.currentUser) import('../firebase/cloudSync').then(({ scheduleCloudSync }) => scheduleCloudSync(auth.currentUser.uid)).catch((error) => console.error('Could not queue workout sync:', error))
+}
 export async function clearAllData() { await db.transaction('rw', db.tables, () => Promise.all(db.tables.map((table) => table.clear()))) }
 export async function exportData() { return { exercises: await db.exercises.toArray(), splitDays: await db.splitDays.toArray(), workouts: await db.workouts.toArray(), bodyWeights: await db.bodyWeights.toArray() } }
 export async function importData(data) { await clearAllData(); await db.transaction('rw', db.tables, () => Promise.all(Object.entries(data).filter(([key]) => db[key]).map(([key, rows]) => db[key].bulkPut(rows)))) }

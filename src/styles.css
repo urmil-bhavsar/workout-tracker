@@ -198,3 +198,70 @@
 .legend-reps {
     background: #75c8ff;
 }
+.cloud-settings {
+    padding: 16px 0;
+}
+
+.cloud-settings-heading {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    color: var(--ink);
+    font-size: 13px;
+}
+
+.cloud-settings-heading>span {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cloud-settings-heading small {
+    color: var(--muted);
+    font-size: 10px;
+    overflow-wrap: anywhere;
+}
+
+.cloud-help,
+.sync-status {
+    margin: 13px 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.cloud-help code {
+    color: var(--ink);
+}
+
+.cloud-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cloud-button {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.cloud-button.primary {
+    background: var(--lime);
+    border-color: var(--lime);
+    color: #111311;
+}
+
+.cloud-button:disabled {
+    opacity: .55;
+    cursor: wait;
+}

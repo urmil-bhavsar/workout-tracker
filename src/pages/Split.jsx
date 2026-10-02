@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Check, Plus, RotateCcw, Trash2 } from 'lucide-react
 import { Layout } from '../components/Layout'
 import { db } from '../db/db'
 import { useWorkoutData } from '../hooks/useWorkoutData'
+import { auth } from '../firebase/client'
 
 export function Split() {
   const { split, exercises, loading, refresh } = useWorkoutData()
@@ -11,7 +12,8 @@ export function Split() {
   const [nameDrafts, setNameDrafts] = useState({})
 
   const update = async (day, patch) => {
-    await db.splitDays.update(day.id, patch)
+    await db.splitDays.update(day.id, { ...patch, updatedAt: Date.now() })
+    if (auth?.currentUser) import('../firebase/cloudSync').then(({ scheduleCloudSync }) => scheduleCloudSync(auth.currentUser.uid)).catch((error) => console.error('Could not queue split sync:', error))
     await refresh()
     setNotice('Split updated')
     setTimeout(() => setNotice(''), 1600)

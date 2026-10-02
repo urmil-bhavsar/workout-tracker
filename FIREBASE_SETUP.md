@@ -18,7 +18,8 @@ RepBook remains local-first: IndexedDB is the working/offline database. Google s
    - `VITE_FIREBASE_APP_ID`
    - `VITE_FIREBASE_MESSAGING_SENDER_ID`
 
-8. Restart Vite after changing `.env.local`. For Vercel, add the same variables under **Project → Settings → Environment Variables**, then redeploy.
+8. Restart Vite after changing `.env.local`. For Vercel, add the Firebase variables under **Project → Settings → Environment Variables**, then redeploy. Keep `VITE_FIREBASE_AUTH_DOMAIN` set to the Firebase default domain for local development; production code uses the site's own hostname and the Vercel rewrites in `vercel.json` proxy the Firebase Auth helper endpoints to the Firebase project.
+9. In **Google Cloud Console → APIs & Services → Credentials**, open the OAuth web client used by Firebase Google sign-in and add `https://workout-tracker-umber-zeta.vercel.app/__/auth/handler` to its authorized redirect URIs. Also add the Vercel hostname in Firebase's Authorized domains list above. If you deploy to another hostname, substitute that hostname in both places.
 
 Firebase's web API key is a client identifier, not a server secret. Data access is protected by Authentication and Firestore Security Rules; never add Admin SDK credentials or service-account keys to this frontend project.
 

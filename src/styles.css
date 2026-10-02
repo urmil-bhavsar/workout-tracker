@@ -24,7 +24,89 @@
 .brand-mark, .save-button, .cloud-button.primary, .toast { color: var(--accent-ink); }
 .app-frame { min-height: 100vh; max-width: 760px; margin: 0 auto; padding-bottom: 96px; } .topbar { height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; border-bottom: 1px solid var(--line); } .brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-size: 12px; font-weight: 800; letter-spacing: .15em; } .brand-mark { display: grid; place-items: center; color: #111311; background: var(--lime); width: 27px; height: 27px; border-radius: 7px; } .profile-dot { border: 1px solid var(--line); background: transparent; border-radius: 50%; width: 34px; height: 34px; display: grid; place-items: center; color: var(--muted); }
 .page { padding: 26px 20px; position: relative; } h1, h2, p { margin-top: 0; } h1 { font-size: 36px; line-height: 1; letter-spacing: -.05em; margin-bottom: 9px; } h2 { letter-spacing: -.035em; } .eyebrow, .card-label, .set-head, .day-name { font-family: 'DM Mono', monospace; text-transform: uppercase; font-size: 10px; letter-spacing: .13em; color: var(--muted); } .muted { color: var(--muted); font-size: 13px; } .page-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; } .heading-icon { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; color: var(--lime); }
-.date-nav { display: flex; align-items: center; justify-content: space-between; margin: 2px 0 36px; } .date-nav button { border: 1px solid var(--line); background: transparent; border-radius: 8px; min-width: 42px; height: 38px; display: grid; place-items: center; } .date-nav .today-button { border: 0; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .1em; color: var(--lime); min-width: auto; } .workout-heading { margin-bottom: 27px; } .workout-heading h1 { text-transform: capitalize; }
+.date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 2px 0 36px;
+}
+
+.date-nav button {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    border-radius: 8px;
+    min-width: 42px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+}
+
+.date-nav .today-button {
+    border: 0;
+    background: transparent;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .1em;
+    color: var(--lime);
+    min-width: auto;
+}
+
+.workout-heading {
+    margin-bottom: 27px;
+}
+
+.workout-heading h1 {
+    text-transform: capitalize;
+}
+
+.day-picker {
+    margin: -7px 0 23px;
+    padding: 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.day-picker>.eyebrow {
+    margin-bottom: 10px;
+}
+
+.day-chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+    gap: 7px;
+}
+
+.day-chip {
+    min-width: 0;
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 3px;
+    padding: 7px 9px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel-2);
+    color: var(--ink);
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.day-chip small {
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 500;
+}
+
+.day-chip.active {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, var(--panel));
+    box-shadow: inset 0 0 0 1px var(--accent);
+}
 .exercise-card, .chart-card, .settings-group { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 13px; } .exercise-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; } .exercise-title > div { display: flex; align-items: baseline; gap: 11px; } .exercise-title h2 { font-size: 18px; margin: 0; } .exercise-index { font: 11px 'DM Mono', monospace; color: var(--lime); } .set-count { font: 10px 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; }
 .set-table { width: 100%; } .set-head, .set-row { display: grid; grid-template-columns: 32px 1fr 1fr 34px; gap: 9px; align-items: center; } .set-head { margin: 0 0 6px; font-size: 9px; } .set-head span:nth-child(2), .set-head span:nth-child(3) { text-align: center; } .set-row { margin-bottom: 7px; } .set-row input { width: 100%; background: var(--panel-2); border: 1px solid transparent; border-radius: 6px; color: var(--ink); min-height: 40px; text-align: center; outline: none; } .set-row input:focus { border-color: var(--lime); } .set-number { font: 12px 'DM Mono', monospace; color: var(--muted); text-align: center; } .icon-button { border: 0; background: transparent; color: var(--muted); display: grid; place-items: center; padding: 7px; } .add-set, .text-button { border: 0; background: transparent; color: var(--lime); display: inline-flex; align-items: center; gap: 7px; padding: 10px 0 0; font-size: 12px; font-weight: 700; } .note-input, .workout-note { width: 100%; margin-top: 15px; background: transparent; border: 0; border-top: 1px solid var(--line); padding: 13px 0 0; color: var(--ink); outline: none; font-size: 12px; resize: vertical; } .workout-note { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-height: 76px; padding: 14px; margin: 3px 0 13px; }
 .save-button {

@@ -5,7 +5,7 @@ import { Layout } from '../components/Layout'
 import { SetTable } from '../components/SetTable'
 import { dateKey, dayIndex, db, getWorkout, saveWorkout, shiftDate } from '../db/db'
 import { useWorkoutData } from '../hooks/useWorkoutData'
-import { bestsBefore, exerciseKey, exercisePrs, lastPerformance, summarizePeriod, workoutPrs } from '../utils/analytics'
+import { bestsBefore, exerciseKey, exercisePrs, lastPerformance, normalizeName, summarizePeriod, workoutPrs } from '../utils/analytics'
 
 const emptySets = (count = 3) => Array.from({ length: count }, () => ({ weight: '', reps: '' }))
 const prettyDate = (date) => new Date(`${date}T12:00:00`).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
@@ -52,7 +52,7 @@ export function Home() {
 	const mainMuscle = () => { const counts = {}; form.exercises.forEach((item) => { const muscle = exercises.find((entry) => entry.id === item.exerciseId)?.muscle; if (muscleGroups.includes(muscle)) counts[muscle] = (counts[muscle] || 0) + 1 }); return Object.keys(counts).sort((x, y) => counts[y] - counts[x])[0] || 'Other' }
 	const addCustom = async () => {
 		const name = custom.name.trim(); if (!name) return
-		let picked = exercises.find((item) => item.name.toLowerCase() === name.toLowerCase())
+		let picked = exercises.find((item) => normalizeName(item.name) === normalizeName(name))
 		if (!picked) { const id = await db.exercises.add({ name, muscle: custom.muscle, equipment: 'Custom', custom: true }); picked = { id, name } }
 		if (custom.toSplit && template && !template.exercises.some((item) => item.exerciseId === picked.id)) await db.splitDays.update(template.id, { exercises: [...template.exercises, { exerciseId: picked.id, name: picked.name, defaultSets: 3, order: template.exercises.length }] })
 		if (form.exercises.some((item) => item.exerciseId === picked.id)) { setCustom(null); return flash(`${picked.name} is already in today's workout`) }

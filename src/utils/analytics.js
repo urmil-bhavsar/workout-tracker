@@ -7,7 +7,10 @@ export const exerciseVolume = (exercise) => exercise.sets.reduce((sum, set) => s
 export const workoutVolume = (workout) => workout.exercises.reduce((sum, exercise) => sum + exerciseVolume(exercise), 0)
 // Epley formula; a single rep is the lift itself.
 export const oneRepMax = (weight, reps) => { const w = num(weight); const r = num(reps); if (!w || !r) return 0; return r === 1 ? w : Math.round(w * (1 + r / 30) * 10) / 10 }
-export const exerciseKey = (exercise) => exercise.exerciseId ?? exercise.name
+// History is matched by name, so the same exercise in two workouts (Push A and Push B) shares its logs,
+// even if it was added to each day separately or renamed to match.
+export const normalizeName = (name = '') => name.trim().toLowerCase().replace(/\s+/g, ' ')
+export const exerciseKey = (exercise) => normalizeName(exercise.name) || exercise.exerciseId
 export const exerciseBest = (exercise) => ({
 	weight: Math.max(0, ...doneSets(exercise).map((set) => num(set.weight))),
 	reps: Math.max(0, ...doneSets(exercise).map((set) => num(set.reps))),

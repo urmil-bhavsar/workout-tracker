@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Check, Plus, RotateCcw, Trash2 } from 'lucide-react
 import { Layout } from '../components/Layout'
 import { db } from '../db/db'
 import { useWorkoutData } from '../hooks/useWorkoutData'
+import { normalizeName } from '../utils/analytics'
 import { auth } from '../firebase/client'
 
 export function Split() {
@@ -20,8 +21,8 @@ export function Split() {
   }
   const move = async (day, index, direction) => { const next = [...day.exercises]; const target = index + direction; if (target < 0 || target >= next.length) return; ;[next[index], next[target]] = [next[target], next[index]]; await update(day, { exercises: next.map((item, i) => ({ ...item, order: i })) }) }
   const remove = async (day, index) => { const next = day.exercises.filter((_, i) => i !== index); await update(day, { exercises: next.map((item, i) => ({ ...item, order: i })) }) }
-  const renameExercise = async (day, index, value) => { const name = value.trim(); const key = `${day.id}-${index}`; setNameDrafts(({ [key]: _, ...rest }) => rest); if (!name || name === day.exercises[index].name) return; await update(day, { exercises: day.exercises.map((item, i) => i === index ? { ...item, name } : item) }) }
-  const addCustomExercise = async (day) => { const name = (customNames[day.id] || '').trim(); if (!name || day.exercises.some((item) => item.name.toLowerCase() === name.toLowerCase())) return; const exerciseId = await db.exercises.add({ name, muscle: 'Custom', equipment: 'Custom', custom: true }); await update(day, { exercises: [...day.exercises, { exerciseId, name, defaultSets: 3, order: day.exercises.length }] }); setCustomNames({ ...customNames, [day.id]: '' }) }
+  const renameExercise = async (day, index, value) => { const name = value.trim(); const key = `${day.id}-${index}`; setNameDrafts(({ [key]: _, ...rest }) => rest); if (!name || name === day.exercises[index].name) return; const match = exercises.find((item) => normalizeName(item.name) === normalizeName(name)); await update(day, { exercises: day.exercises.map((item, i) => i === index ? { ...item, name, ...(match ? { exerciseId: match.id } : {}) } : item) }) }
+  const addCustomExercise = async (day) => { const name = (customNames[day.id] || '').trim(); if (!name || day.exercises.some((item) => item.name.toLowerCase() === name.toLowerCase())) return; const existing = exercises.find((item) => normalizeName(item.name) === normalizeName(name)); const exerciseId = existing ? existing.id : await db.exercises.add({ name, muscle: 'Custom', equipment: 'Custom', custom: true }); await update(day, { exercises: [...day.exercises, { exerciseId, name, defaultSets: 3, order: day.exercises.length }] }); setCustomNames({ ...customNames, [day.id]: '' }) }
   if (loading) return <Layout><main className="page"><div className="loading">Loading split...</div></main></Layout>
   return <Layout><main className="page">
     <div className="page-heading"><div><p className="eyebrow">Your weekly rhythm</p><h1>Split</h1></div><button className="text-button" onClick={() => split.forEach((day) => update(day, { name: day.isRest ? 'Rest' : day.name }))}><RotateCcw size={15}/> Reset</button></div>
